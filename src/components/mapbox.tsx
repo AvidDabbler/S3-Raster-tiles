@@ -1,16 +1,16 @@
 import React, { ReactNode, createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import mapboxgl, {
   Map,
-  MapboxOptions, RasterSource,
+  MapboxOptions,
 } from "mapbox-gl";
 import { useEffectOnce } from "../hooks/useEffectOnce";
 
-
+// This is where the store context is kept
 export const MapBoxContext = createContext<Map | null>(null);
-
 
 export const useMapBox = () => {
   const map = useContext(MapBoxContext);
+  // this hook should only be allowed to run if it is used within the MapBoxContext Provider
   if (!map) {
     throw new Error("useMap should be used in <Map> child components");
   }
@@ -23,12 +23,6 @@ export const useMapBoxStore = ({ MAPBOX_API_KEY, options }: {
 }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<Map | null>(null);
-
-  useEffect(() => {
-    if (map) {
-      if (options.center && options.zoom) map.setCenter(options.center);
-    }
-  }, [map]);
 
   useEffect(() => {
     if (map) {
@@ -88,6 +82,7 @@ export function DroneLayer() {
     try {
       // @ts-expect-error
       const env = import.meta.env;
+      // This should only run once the mapbox component is done loading all of the styles
       map.once('styledata', function () {
         map.addSource('drone-imagery', {
           type: 'raster',
