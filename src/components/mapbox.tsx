@@ -81,3 +81,37 @@ export const MapComponent = ({
     </MapBoxContext.Provider>
   );
 };
+
+export function DroneLayer() {
+  const map = useMapBox();
+  useEffect(() => {
+    try {
+      // @ts-expect-error
+      const env = import.meta.env;
+      map.once('styledata', function () {
+        map.addSource('drone-imagery', {
+          type: 'raster',
+          tiles: [
+            `${env.VITE_APP_S3BUCKET_URL}/s3-tiles/{z}/{x}/{y}.png`,
+          ],
+          // tileSize: 256,
+        });
+        map.addLayer({
+          id: 'radar-layer',
+          type: 'raster',
+          source: 'drone-imagery',
+          paint: {
+            'raster-fade-duration': 0,
+          },
+        });
+        console.log('add imagery');
+      })
+    } catch (e) {
+      console.error(e);
+    }
+    return () => {
+      map.removeSource('drone-imagery');
+    };
+  }, [map]);
+  return null;
+}
